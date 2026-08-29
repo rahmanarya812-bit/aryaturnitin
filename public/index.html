@@ -535,21 +535,10 @@
                 formData.append('raw_text', textVal);
             }
 
-            let res;
-            try {
-                // Try relative API endpoint first
-                res = await fetch('/api/check', {
-                    method: 'POST',
-                    body: formData
-                });
-            } catch (netErr) {
-                console.warn("Cloudflare relative endpoint failed, retrying via localhost:8000...", netErr);
-                // Fallback to direct localhost:8000 if running locally or via Tunnel CORS
-                res = await fetch('http://localhost:8000/api/check', {
-                    method: 'POST',
-                    body: formData
-                });
-            }
+            const res = await fetch('/api/check', {
+                method: 'POST',
+                body: formData
+            });
 
             const data = await res.json();
 
@@ -560,7 +549,7 @@
                 alert(`Gagal: ${data.detail || 'Terjadi kesalahan'}`);
             }
         } catch (err) {
-            alert('Server backend Turnitin belum aktif atau terputus.\n\nSilakan jalankan file "run.bat" di folder d:\\aryaturnitin atau jalankan perintah "python run.py" di Command Prompt.');
+            alert('Gagal memproses analisis dokumen. Silakan periksa koneksi internet atau format berkas Anda.');
             console.error(err);
         } finally {
                 submitBtn.disabled = false;
