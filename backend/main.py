@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse, FileResponse
 
 from database import init_db, add_document, get_corpus_documents, save_report, get_report, get_all_reports
-from parser import extract_text
+from parser import extract_text, extract_text_from_bytes
 from similarity import analyze_plagiarism
 from ai_detector import detect_ai_generated_text
 from paraphraser import paraphrase_text
@@ -60,11 +60,8 @@ async def check_plagiarism(
 
     if file and file.filename:
         file_name = file.filename
-        temp_path = os.path.join(UPLOAD_DIR, file_name)
-        with open(temp_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        
-        extracted_text = extract_text(temp_path)
+        file_bytes = await file.read()
+        extracted_text = extract_text_from_bytes(file_bytes, file_name)
     elif raw_text and raw_text.strip():
         extracted_text = raw_text
     else:
