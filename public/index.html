@@ -199,16 +199,16 @@
                 <!-- Input File Tab -->
                 <div id="fileInputContainer" class="space-y-2">
                     <label class="block text-xs font-bold uppercase text-slate-600">Pilih Berkas Dokumen (.pdf, .docx, .txt)</label>
-                    <div id="dropZone" onclick="triggerFileInput(event)" class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-emerald-50/50 hover:border-emerald-400 transition cursor-pointer relative">
-                        <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" class="hidden" onclick="event.stopPropagation()" onchange="handleFileSelected(this)">
-                        <div class="space-y-3 pointer-events-none">
+                    <div id="dropZone" class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-emerald-50/50 hover:border-emerald-400 transition cursor-pointer relative overflow-hidden">
+                        <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" onchange="handleFileSelected(this)">
+                        <div class="space-y-3 pointer-events-none relative z-10">
                             <i class="fa-solid fa-file-circle-plus text-4xl text-slate-400"></i>
                             <div class="text-sm font-medium text-slate-700">
                                 Klik untuk memilih berkas atau <span class="text-emerald-600 font-bold">seret & lepas di sini</span>
                             </div>
                             <p class="text-xs text-slate-400">Maksimum ukuran berkas: 20 MB</p>
                         </div>
-                        <div id="selectedFileName" class="mt-4 hidden text-sm font-bold text-emerald-700 bg-emerald-100 p-2 rounded-lg inline-block"></div>
+                        <div id="selectedFileName" class="mt-4 hidden text-sm font-bold text-emerald-700 bg-emerald-100 p-2 rounded-lg inline-block relative z-30"></div>
                     </div>
                 </div>
 
