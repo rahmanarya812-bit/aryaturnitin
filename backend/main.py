@@ -204,7 +204,10 @@ async def export_pdf_report(report_id: int):
         headers={"Content-Disposition": f'attachment; filename="{filename}"'}
     )
 
-# Serve Frontend static files
-FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
-if os.path.exists(FRONTEND_DIR):
-    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+# Serve Frontend static files (Local & Non-serverless fallback)
+try:
+    FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
+    if os.path.exists(FRONTEND_DIR):
+        app.mount("/static", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+except Exception as e:
+    print(f"Static files mount skipped: {e}")
