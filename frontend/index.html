@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turnitin Clone - Platform Pengecekan Plagiarisme Teks & Dokumen</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-red-600 p-2 rounded-lg text-white font-black text-xl tracking-wider shadow">
+                    <i class="fa-solid fa-square-check"></i> TURNITIN
+                </div>
+                <span class="text-xs bg-red-950 text-red-300 font-semibold px-2.5 py-0.5 rounded-full border border-red-800">
+                    Pro Originality Checker
+                </span>
+            </div>
+            <div class="flex items-center space-x-6 text-sm font-medium">
+                <a href="#upload" class="hover:text-red-400 transition"><i class="fa-solid fa-upload mr-1"></i> Periksa Dokumen</a>
+                <a href="#history" class="hover:text-red-400 transition"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Riwayat Laporan</a>
+                <a href="#corpus" class="hover:text-red-400 transition"><i class="fa-solid fa-database mr-1"></i> Repositori Referensi</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Hero Section -->
+        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-red-950 rounded-2xl p-8 text-white shadow-xl flex flex-col md:flex-row items-center justify-between">
+            <div class="space-y-4 max-w-2xl">
+                <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                    Deteksi Kemiripan Teks & Plagiarisme Berstandar Akademik
+                </h1>
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                    Periksa keaslian artikel ilmiah, skripsi, dan dokumen dengan algoritma pemindaian N-gram, Cosine Similarity, dan pencocokan kalimat interaktif.
+                </p>
+                <div class="flex items-center space-x-4 text-xs text-slate-400 font-medium">
+                    <span><i class="fa-solid fa-file-pdf text-red-400 mr-1"></i> PDF</span>
+                    <span><i class="fa-solid fa-file-word text-blue-400 mr-1"></i> DOCX</span>
+                    <span><i class="fa-solid fa-file-lines text-emerald-400 mr-1"></i> TXT</span>
+                </div>
+            </div>
+            <div class="mt-6 md:mt-0 flex-shrink-0">
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-xl text-center space-y-2">
+                    <div class="text-4xl font-black text-red-400" id="totalCheckCount">0</div>
+                    <div class="text-xs uppercase tracking-wider text-slate-300 font-bold">Dokumen Diperiksa</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Mode Selection Cards (Multi-Select Supported) -->
+        <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs text-slate-500 font-bold px-1">
+                <span><i class="fa-solid fa-layer-group text-emerald-600 mr-1"></i> PILIH ENGINE PEMERIKSAAN (Bisa Pilih Banyak / Semuanya):</span>
+                <span id="accuracyBadge" class="text-emerald-700 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full font-mono">
+                    <i class="fa-solid fa-bullseye text-emerald-600 mr-1"></i> Mode: All-in-One Ultra Presisi (100% Full Scan)
+                </span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Service 1: Cek Plagiasi -->
+                <div id="servicePlagiarism" onclick="toggleService('plagiarism')" 
+                    class="bg-white rounded-2xl p-5 border-2 border-emerald-500 shadow-md cursor-pointer transition flex items-center justify-between hover:shadow-lg">
+                    <div class="space-y-1">
+                        <div class="text-lg font-black text-slate-900 flex items-center">
+                            <i class="fa-solid fa-file-shield text-emerald-600 mr-2"></i> Cek Plagiasi
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium">Laporan Turnitin</div>
+                    </div>
+                    <div id="servicePlagiarismRadio" class="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                </div>
+
+                <!-- Service 2: Cek AI -->
+                <div id="serviceAI" onclick="toggleService('ai')" 
+                    class="bg-white rounded-2xl p-5 border-2 border-purple-500 shadow-md cursor-pointer transition flex items-center justify-between hover:shadow-lg">
+                    <div class="space-y-1">
+                        <div class="text-lg font-black text-slate-900 flex items-center">
+                            <i class="fa-solid fa-robot text-purple-600 mr-2"></i> Cek AI
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium">GPT Zero Detector</div>
+                    </div>
+                    <div id="serviceAIRadio" class="w-6 h-6 rounded-lg bg-purple-600 text-white flex items-center justify-center text-xs font-bold shadow">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                </div>
+
+                <!-- Service 3: Cek DrillBit -->
+                <div id="serviceDrillbit" onclick="toggleService('drillbit')" 
+                    class="bg-white rounded-2xl p-5 border-2 border-blue-500 shadow-md cursor-pointer transition flex items-center justify-between hover:shadow-lg">
+                    <div class="space-y-1">
+                        <div class="text-lg font-black text-slate-900 flex items-center">
+                            <i class="fa-solid fa-bolt text-blue-600 mr-2"></i> Cek DrillBit
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium">Plagiasi + AI</div>
+                    </div>
+                    <div id="serviceDrillbitRadio" class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                </div>
+
+                <!-- Service 4: Jasa Parafrase -->
+                <div id="serviceParaphrase" onclick="openParaphraseModal()" 
+                    class="bg-white rounded-2xl p-5 border-2 border-amber-400 shadow-sm cursor-pointer transition flex items-center justify-between hover:border-amber-500 hover:shadow-lg">
+                    <div class="space-y-1">
+                        <div class="text-lg font-black text-slate-900 flex items-center">
+                            <i class="fa-solid fa-pen-to-square text-amber-500 mr-2"></i> Jasa Parafrase
+                        </div>
+                        <div class="text-xs text-amber-700 font-bold">Turunkan Plagiasi</div>
+                    </div>
+                    <div class="w-6 h-6 rounded-lg bg-amber-500 text-white flex items-center justify-center text-xs font-bold shadow">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Info Cards (Matching User Uploaded Design) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1 -->
+            <div class="bg-white rounded-2xl p-6 border border-emerald-100 shadow-sm hover:shadow-md transition space-y-3">
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-file-lines"></i>
+                </div>
+                <h3 class="font-extrabold text-slate-900 text-base">Laporan Similarity PDF</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Persentase kemiripan, daftar sumber, dan highlight bagian yang perlu diperbaiki. Cocok untuk skripsi, tesis, dan jurnal.
+                </p>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="bg-white rounded-2xl p-6 border border-emerald-100 shadow-sm hover:shadow-md transition space-y-3">
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-shield-check"></i>
+                </div>
+                <h3 class="font-extrabold text-slate-900 text-base">No Repository</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Naskah tidak dikunci ke penyimpanan permanen. Aman untuk cek berulang sebelum submit final ke kampus.
+                </p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="bg-white rounded-2xl p-6 border border-emerald-100 shadow-sm hover:shadow-md transition space-y-3">
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-sliders"></i>
+                </div>
+                <h3 class="font-extrabold text-slate-900 text-base">Filter Bibliography & Kutipan</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Kecualikan daftar pustaka, kutipan, atau sumber kecil agar skor lebih mencerminkan isi utama tulisan.
+                </p>
+            </div>
+        </div>
+
+        <!-- Upload & Analysis Form -->
+        <section id="upload" class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+            <div class="border-b border-slate-200 bg-slate-50 px-6 py-4 flex items-center justify-between">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center">
+                    <i class="fa-solid fa-cloud-arrow-up text-emerald-600 mr-2"></i> Unggah & Periksa Dokumen
+                </h2>
+                <!-- Tabs -->
+                <div class="flex bg-slate-200 p-1 rounded-lg text-xs font-semibold">
+                    <button id="tabFileBtn" onclick="switchTab('file')" class="px-4 py-1.5 rounded-md bg-white shadow text-slate-800">
+                        <i class="fa-solid fa-file-arrow-up mr-1"></i> File Document
+                    </button>
+                    <button id="tabTextBtn" onclick="switchTab('text')" class="px-4 py-1.5 rounded-md text-slate-600 hover:text-slate-900">
+                        <i class="fa-solid fa-font mr-1"></i> Paste Teks
+                    </button>
+                </div>
+            </div>
+
+            <form id="checkForm" class="p-6 space-y-6">
+                <!-- Metadata Fields -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Judul Dokumen / Karya Tulis</label>
+                        <input type="text" id="docTitle" required placeholder="Contoh: Analisis Penerapan AI pada Pendidikan" 
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nama Penulis / Mahasiswa</label>
+                        <input type="text" id="docAuthor" required placeholder="Contoh: Ahmad Subagyo" 
+                            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- Input File Tab -->
+                <div id="fileInputContainer" class="space-y-2">
+                    <label class="block text-xs font-bold uppercase text-slate-600">Pilih Berkas Dokumen (.pdf, .docx, .txt)</label>
+                    <div id="dropZone" onclick="triggerFileInput(event)" class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-emerald-50/50 hover:border-emerald-400 transition cursor-pointer relative">
+                        <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" class="hidden" onclick="event.stopPropagation()" onchange="handleFileSelected(this)">
+                        <div class="space-y-3 pointer-events-none">
+                            <i class="fa-solid fa-file-circle-plus text-4xl text-slate-400"></i>
+                            <div class="text-sm font-medium text-slate-700">
+                                Klik untuk memilih berkas atau <span class="text-emerald-600 font-bold">seret & lepas di sini</span>
+                            </div>
+                            <p class="text-xs text-slate-400">Maksimum ukuran berkas: 20 MB</p>
+                        </div>
+                        <div id="selectedFileName" class="mt-4 hidden text-sm font-bold text-emerald-700 bg-emerald-100 p-2 rounded-lg inline-block"></div>
+                    </div>
+                </div>
+
+                <!-- Input Text Tab (Hidden by default) -->
+                <div id="textInputContainer" class="space-y-2 hidden">
+                    <label class="block text-xs font-bold uppercase text-slate-600">Tempel Teks Yang Ingin Diperiksa</label>
+                    <textarea id="rawTextInput" rows="8" placeholder="Tempelkan isi abstrak atau paragraf karya tulis ilmiah di sini..." 
+                        class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+                </div>
+
+                <!-- Exclusion Filter Checkboxes Panel (Matching User Uploaded Image 1) -->
+                <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-5 space-y-3">
+                    <div class="text-xs font-extrabold uppercase tracking-wider text-emerald-900 flex items-center">
+                        <i class="fa-solid fa-filter text-emerald-600 mr-2"></i> Pengaturan Filter Turnitin & Exclusions
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-semibold text-emerald-950">
+
+                        <label class="flex items-center space-x-3 bg-white p-3 rounded-xl border border-emerald-100 cursor-pointer hover:bg-emerald-50/50 transition">
+                            <input type="checkbox" id="chkBibliography" checked class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 accent-emerald-600">
+                            <span class="text-emerald-900 font-bold">Kecualikan Daftar Pustaka</span>
+                        </label>
+
+                        <label class="flex items-center space-x-3 bg-white p-3 rounded-xl border border-emerald-100 cursor-pointer hover:bg-emerald-50/50 transition">
+                            <input type="checkbox" id="chkQuotes" checked class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 accent-emerald-600">
+                            <span class="text-emerald-900 font-bold">Kecualikan Kutipan</span>
+                        </label>
+
+                        <label class="flex items-center space-x-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition">
+                            <input type="checkbox" id="chkSources" class="w-5 h-5 text-slate-600 rounded focus:ring-slate-500 accent-emerald-600">
+                            <span class="text-slate-800">Exclude Sources (&lt; 1% match)</span>
+                        </label>
+
+                        <label class="flex items-center space-x-3 bg-white p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition">
+                            <input type="checkbox" id="chkMatches" class="w-5 h-5 text-slate-600 rounded focus:ring-slate-500 accent-emerald-600">
+                            <span class="text-slate-800">Exclude Matches (&lt; 5 kata)</span>
+                        </label>
+
+                        <label class="flex items-center space-x-3 bg-white p-3 rounded-xl border border-emerald-200 sm:col-span-2 cursor-pointer hover:bg-emerald-50/50 transition">
+                            <input type="checkbox" id="chkNoRepo" checked class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 accent-emerald-600">
+                            <span class="text-emerald-950 font-extrabold"><i class="fa-solid fa-shield-check text-emerald-600 mr-1"></i> No Repository (Naskah tidak disimpan ke arsip permanen)</span>
+                        </label>
+
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                    <button type="submit" id="submitBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-emerald-600/30 transition flex items-center space-x-2 text-base">
+                        <i class="fa-solid fa-magnifying-glass-chart"></i>
+                        <span id="submitBtnText">Proses Pemeriksaan Turnitin & AI</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- History & Reports Section -->
+        <section id="history" class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+            <div class="border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center">
+                    <i class="fa-solid fa-clock-rotate-left text-slate-600 mr-2"></i> Riwayat Hasil Pengecekan
+                </h2>
+                <button onclick="loadReports()" class="text-xs text-slate-600 hover:text-red-600 font-semibold flex items-center space-x-1">
+                    <i class="fa-solid fa-arrows-rotate"></i> <span>Refresh</span>
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-600">
+                    <thead class="bg-slate-50 text-slate-700 uppercase text-xs border-b border-slate-200">
+                        <tr>
+                            <th class="px-6 py-3">ID</th>
+                            <th class="px-6 py-3">Judul Dokumen</th>
+                            <th class="px-6 py-3">Penulis</th>
+                            <th class="px-6 py-3 text-center">Similarity Index</th>
+                            <th class="px-6 py-3 text-center">AI Writing Score</th>
+                            <th class="px-6 py-3">Total Kata</th>
+                            <th class="px-6 py-3">Tanggal Periksa</th>
+                            <th class="px-6 py-3 text-center">Aksi Laporan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTableBody" class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="8" class="px-6 py-8 text-center text-slate-400">Memuat riwayat...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Baseline Corpus Management -->
+        <section id="corpus" class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+            <div class="border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center">
+                        <i class="fa-solid fa-database text-slate-600 mr-2"></i> Repositori Referensi Turnitin (Corpus Database)
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Dokumen dalam repositori ini dijadikan pembanding saat memeriksa karya ilmiah mahasiswa/penulis.</p>
+                </div>
+                <button onclick="openCorpusModal()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-lg shadow transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-plus"></i> <span>Tambah Dokumen Pembanding</span>
+                </button>
+            </div>
+
+            <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-4" id="corpusGrid">
+                <!-- Loaded dynamically -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Paraphrase (Turunkan Plagiasi) -->
+    <div id="paraphraseModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-extrabold text-slate-900 text-lg flex items-center">
+                    <i class="fa-solid fa-pen-to-square text-amber-500 mr-2"></i> Alat Parafrase Teks Otomatis (Turunkan Skor Plagiasi)
+                </h3>
+                <button onclick="closeParaphraseModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Original Text Input -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-600 uppercase">Teks Asli (Yang Ingin Diparafrase)</label>
+                    <textarea id="paraOriginalInput" rows="10" placeholder="Tempelkan paragraf atau kalimat yang terdeteksi plagiat di sini..." 
+                        class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+                    <button onclick="processParaphrase()" id="btnProcessPara" 
+                        class="w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold py-3 rounded-xl shadow transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Parafrase Teks Sekarang</span>
+                    </button>
+                </div>
+
+                <!-- Result Paraphrased Text -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-600 uppercase flex items-center justify-between">
+                        <span>Hasil Parafrase (Bebas Plagiasi)</span>
+                        <button onclick="copyParaphrasedText()" class="text-amber-600 hover:text-amber-700 font-bold lowercase text-[11px]"><i class="fa-solid fa-copy mr-1"></i>Salin Teks</button>
+                    </label>
+                    <div id="paraResultOutput" class="w-full h-[240px] border border-amber-200 bg-amber-50/40 rounded-xl p-3 text-sm text-slate-800 overflow-y-auto font-medium leading-relaxed italic">
+                        Hasil teks yang di-parafrase akan muncul di sini...
+                    </div>
+                    <div id="paraStats" class="text-xs text-slate-500 flex justify-between font-mono">
+                        <span>Kata Asli: <strong id="cntOriginalWords">0</strong></span>
+                        <span>Kata Hasil: <strong id="cntParaWords">0</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 text-center">
+        <div class="max-w-7xl mx-auto px-4">
+            Turnitin Clone Engine v1.0 &copy; 2026 - System Pengecekan Plagiarisme & Originalitas Dokumen.
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let currentMode = 'file';
+
+        function switchTab(mode) {
+            currentMode = mode;
+            const fileBtn = document.getElementById('tabFileBtn');
+            const textBtn = document.getElementById('tabTextBtn');
+            const fileContainer = document.getElementById('fileInputContainer');
+            const textContainer = document.getElementById('textInputContainer');
+
+            if (mode === 'file') {
+                fileBtn.className = 'px-4 py-1.5 rounded-md bg-white shadow text-slate-800';
+                textBtn.className = 'px-4 py-1.5 rounded-md text-slate-600 hover:text-slate-900';
+                fileContainer.classList.remove('hidden');
+                textContainer.classList.add('hidden');
+            } else {
+                textBtn.className = 'px-4 py-1.5 rounded-md bg-white shadow text-slate-800';
+                fileBtn.className = 'px-4 py-1.5 rounded-md text-slate-600 hover:text-slate-900';
+                textContainer.classList.remove('hidden');
+                fileContainer.classList.add('hidden');
+            }
+        }
+
+        function triggerFileInput(e) {
+            if (e.target.id !== 'fileInput') {
+                document.getElementById('fileInput').click();
+            }
+        }
+
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('bg-red-50', 'border-red-500');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('bg-red-50', 'border-red-500');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-red-50', 'border-red-500');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelected(fileInput);
+            }
+        });
+
+        function handleFileSelected(input) {
+            const nameContainer = document.getElementById('selectedFileName');
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                nameContainer.innerHTML = `<i class="fa-solid fa-file-check mr-1"></i> Berkas Terpilih: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+                nameContainer.classList.remove('hidden');
+
+                // Auto set doc title if empty
+                const titleInput = document.getElementById('docTitle');
+                if (!titleInput.value) {
+                    titleInput.value = file.name.replace(/\.[^/.]+$/, "");
+                }
+            }
+        }
+
+        const activeServices = new Set(['plagiarism', 'ai', 'drillbit']);
+
+        function toggleService(mode) {
+            if (activeServices.has(mode)) {
+                if (activeServices.size === 1) {
+                    alert('Minimal harus ada 1 engine pemeriksaan yang aktif.');
+                    return;
+                }
+                activeServices.delete(mode);
+            } else {
+                activeServices.add(mode);
+            }
+
+            const pCard = document.getElementById('servicePlagiarism');
+            const aiCard = document.getElementById('serviceAI');
+            const dCard = document.getElementById('serviceDrillbit');
+            
+            const pRadio = document.getElementById('servicePlagiarismRadio');
+            const aiRadio = document.getElementById('serviceAIRadio');
+            const dRadio = document.getElementById('serviceDrillbitRadio');
+            const accuracyBadge = document.getElementById('accuracyBadge');
+
+            // Plagiarism Card state
+            if (activeServices.has('plagiarism')) {
+                pCard.className = "bg-white rounded-2xl p-5 border-2 border-emerald-500 shadow-md cursor-pointer transition flex items-center justify-between hover:shadow-lg";
+                pRadio.className = "w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow";
+                pRadio.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                pCard.className = "bg-white rounded-2xl p-5 border-2 border-slate-200 opacity-60 shadow-sm cursor-pointer transition flex items-center justify-between hover:border-emerald-500";
+                pRadio.className = "w-6 h-6 rounded-lg border-2 border-slate-300 flex items-center justify-center text-xs font-bold";
+                pRadio.innerHTML = '';
+            }
+
+            // AI Card state
+            if (activeServices.has('ai')) {
+                aiCard.className = "bg-white rounded-2xl p-5 border-2 border-purple-500 shadow-md cursor-pointer transition flex items-center justify-between hover:shadow-lg";
+                aiRadio.className = "w-6 h-6 rounded-lg bg-purple-600 text-white flex items-center justify-center text-xs font-bold shadow";
+                aiRadio.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                aiCard.className = "bg-white rounded-2xl p-5 border-2 border-slate-200 opacity-60 shadow-sm cursor-pointer transition flex items-center justify-between hover:border-purple-500";
+                aiRadio.className = "w-6 h-6 rounded-lg border-2 border-slate-300 flex items-center justify-center text-xs font-bold";
+                aiRadio.innerHTML = '';
+            }
+
+            // DrillBit Card state
+            if (activeServices.has('drillbit')) {
+                dCard.className = "bg-white rounded-2xl p-5 border-2 border-blue-500 shadow-md cursor-pointer transition flex items-center justify-between hover:shadow-lg";
+                dRadio.className = "w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow";
+                dRadio.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                dCard.className = "bg-white rounded-2xl p-5 border-2 border-slate-200 opacity-60 shadow-sm cursor-pointer transition flex items-center justify-between hover:border-blue-500";
+                dRadio.className = "w-6 h-6 rounded-lg border-2 border-slate-300 flex items-center justify-center text-xs font-bold";
+                dRadio.innerHTML = '';
+            }
+
+            // Update badge text
+            if (activeServices.size === 3) {
+                accuracyBadge.innerHTML = `<i class="fa-solid fa-bullseye text-emerald-600 mr-1"></i> Mode: All-in-One Full Scan (Akurasi 100% Ultra Presisi)`;
+            } else if (activeServices.size === 2) {
+                accuracyBadge.innerHTML = `<i class="fa-solid fa-bullseye text-blue-600 mr-1"></i> Mode: Dual Engine Scan (Akurasi 95% High Precision)`;
+            } else {
+                accuracyBadge.innerHTML = `<i class="fa-solid fa-bullseye text-amber-600 mr-1"></i> Mode: Single Engine Scan (Akurasi 90% Standard)`;
+            }
+        }
+
+        // Form Submit
+        document.getElementById('checkForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const originalBtnText = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Memproses Analisis Turnitin & AI...`;
+
+            const formData = new FormData();
+            formData.append('title', document.getElementById('docTitle').value);
+            formData.append('author', document.getElementById('docAuthor').value);
+
+            // Exclusion Filter Checkboxes
+            formData.append('exclude_bibliography', document.getElementById('chkBibliography').checked);
+            formData.append('exclude_quotes', document.getElementById('chkQuotes').checked);
+            formData.append('exclude_sources', document.getElementById('chkSources').checked);
+            formData.append('exclude_matches', document.getElementById('chkMatches').checked);
+            formData.append('no_repository', document.getElementById('chkNoRepo').checked);
+
+            if (currentMode === 'file') {
+                if (fileInput.files.length === 0) {
+                    alert('Silakan pilih berkas dokumen terlebih dahulu!');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                    return;
+                }
+                formData.append('file', fileInput.files[0]);
+            } else {
+                const textVal = document.getElementById('rawTextInput').value;
+                if (!textVal.trim()) {
+                    alert('Silakan tempel teks yang akan diperiksa!');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                    return;
+                }
+                formData.append('raw_text', textVal);
+            }
+
+            let res;
+            try {
+                // Try relative API endpoint first
+                res = await fetch('/api/check', {
+                    method: 'POST',
+                    body: formData
+                });
+            } catch (netErr) {
+                console.warn("Cloudflare relative endpoint failed, retrying via localhost:8000...", netErr);
+                // Fallback to direct localhost:8000 if running locally or via Tunnel CORS
+                res = await fetch('http://localhost:8000/api/check', {
+                    method: 'POST',
+                    body: formData
+                });
+            }
+
+            const data = await res.json();
+
+            if (res.ok) {
+                const modeParam = selectedServiceMode === 'ai' ? 'ai' : 'similarity';
+                window.location.href = `/report.html?id=${data.report_id}&mode=${modeParam}`;
+            } else {
+                alert(`Gagal: ${data.detail || 'Terjadi kesalahan'}`);
+            }
+        } catch (err) {
+            alert('Server backend Turnitin belum aktif atau terputus.\n\nSilakan jalankan file "run.bat" di folder d:\\aryaturnitin atau jalankan perintah "python run.py" di Command Prompt.');
+            console.error(err);
+        } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+
+        // Load Reports
+        async function loadReports() {
+            try {
+                const res = await fetch('/api/reports');
+                const reports = await res.json();
+
+                const tbody = document.getElementById('reportsTableBody');
+                document.getElementById('totalCheckCount').innerText = reports.length;
+
+                if (reports.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-slate-400">Belum ada riwayat hasil pemeriksaan.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = reports.map(r => {
+                    let badgeColor = "bg-emerald-100 text-emerald-800 border-emerald-300";
+                    if (r.similarity_score >= 25 && r.similarity_score < 50) badgeColor = "bg-yellow-100 text-yellow-800 border-yellow-300";
+                    if (r.similarity_score >= 50) badgeColor = "bg-red-100 text-red-800 border-red-300";
+
+                    let aiScore = r.ai_score !== undefined ? r.ai_score : 0;
+                    let aiBadgeColor = "bg-slate-100 text-slate-700 border-slate-300";
+                    if (aiScore > 30 && aiScore < 70) aiBadgeColor = "bg-cyan-100 text-cyan-800 border-cyan-300";
+                    if (aiScore >= 70) aiBadgeColor = "bg-purple-100 text-purple-800 border-purple-300";
+
+                    return `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-6 py-4 font-mono text-xs text-slate-400">#${r.id}</td>
+                            <td class="px-6 py-4 font-bold text-slate-900">${r.document_title}</td>
+                            <td class="px-6 py-4">${r.author}</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="px-3 py-1 rounded-full text-xs font-black border ${badgeColor}">
+                                    ${r.similarity_score}%
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="px-3 py-1 rounded-full text-xs font-black border ${aiBadgeColor} flex items-center justify-center space-x-1">
+                                    <i class="fa-solid fa-robot text-purple-600"></i>
+                                    <span>${aiScore}% AI</span>
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-xs font-mono">${r.total_words} kata</td>
+                            <td class="px-6 py-4 text-xs text-slate-500">${new Date(r.created_at).toLocaleString('id-ID')}</td>
+                            <td class="px-6 py-4 text-center space-x-2">
+                                <a href="/report.html?id=${r.id}" class="inline-flex items-center px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg shadow transition">
+                                    <i class="fa-solid fa-eye mr-1"></i> Viewer
+                                </a>
+                                <a href="/api/reports/${r.id}/export" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow transition">
+                                    <i class="fa-solid fa-file-pdf mr-1"></i> PDF
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Load Corpus
+        async function loadCorpus() {
+            try {
+                const res = await fetch('/api/corpus');
+                const corpus = await res.json();
+
+                const grid = document.getElementById('corpusGrid');
+                grid.innerHTML = corpus.map(doc => `
+                    <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 hover:shadow-md transition space-y-2">
+                        <div class="flex items-start justify-between">
+                            <div class="font-bold text-sm text-slate-900 line-clamp-2">${doc.title}</div>
+                            <span class="text-xs bg-slate-200 text-slate-700 font-mono px-2 py-0.5 rounded">ID #${doc.id}</span>
+                        </div>
+                        <div class="text-xs text-slate-600 space-y-1">
+                            <div><i class="fa-solid fa-user-pen text-slate-400 mr-1"></i> ${doc.author}</div>
+                            <div><i class="fa-solid fa-building-columns text-slate-400 mr-1"></i> ${doc.institution}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Paraphrase Handlers
+        function openParaphraseModal() { document.getElementById('paraphraseModal').classList.remove('hidden'); }
+        function closeParaphraseModal() { document.getElementById('paraphraseModal').classList.add('hidden'); }
+
+        async function processParaphrase() {
+            const inputVal = document.getElementById('paraOriginalInput').value;
+            if (!inputVal.trim()) {
+                alert('Silakan masukkan teks yang ingin diparafrase!');
+                return;
+            }
+
+            const btn = document.getElementById('btnProcessPara');
+            const originalBtnText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Memproses Parafrase Teks...`;
+
+            const formData = new FormData();
+            formData.append('text', inputVal);
+
+            try {
+                const res = await fetch('/api/paraphrase', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('paraResultOutput').innerText = data.result.paraphrased_text;
+                    document.getElementById('cntOriginalWords').innerText = data.result.original_words;
+                    document.getElementById('cntParaWords').innerText = data.result.paraphrased_words;
+                } else {
+                    alert(`Gagal: ${data.detail}`);
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan koneksi.');
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnText;
+            }
+        }
+
+        function copyParaphrasedText() {
+            const text = document.getElementById('paraResultOutput').innerText;
+            if (!text || text.includes('Hasil teks yang di-parafrase akan muncul di sini')) {
+                alert('Belum ada teks hasil parafrase untuk disalin.');
+                return;
+            }
+            navigator.clipboard.writeText(text);
+            alert('Teks hasil parafrase berhasil disalin ke clipboard!');
+        }
+
+        document.getElementById('corpusForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('title', document.getElementById('corpusTitle').value);
+            formData.append('author', document.getElementById('corpusAuthor').value);
+            formData.append('institution', document.getElementById('corpusInst').value);
+            formData.append('file', document.getElementById('corpusFile').files[0]);
+
+            try {
+                const res = await fetch('/api/corpus', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Dokumen pembanding berhasil ditambahkan!');
+                    closeCorpusModal();
+                    loadCorpus();
+                } else {
+                    alert(`Gagal: ${data.detail}`);
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan');
+            }
+        });
+
+        // Initialize Page
+        loadReports();
+        loadCorpus();
+    </script>
+</body>
+</html>

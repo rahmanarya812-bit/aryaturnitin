@@ -1,0 +1,11 @@
+tunnel: ab3272cb-8a4b-4a29-802f-826b637ff539
+credentials-file: C:\Users\SEKWAN SUMENEP\.cloudflared\ab3272cb-8a4b-4a29-802f-826b637ff539.json
+
+ingress:
+  - hostname: cek.nasigorengmadura.web.id
+    service: http://127.0.0.1:8000
+  - hostname: turnitin.nasigorengmadura.web.id
+    service: http://127.0.0.1:8000
+  - hostname: nasigorengmadura.web.id
+    service: http://127.0.0.1:8000
+  - service: http://127.0.0.1:8000
