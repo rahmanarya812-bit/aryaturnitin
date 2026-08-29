@@ -197,7 +197,7 @@
                 </div>
 
                 <!-- Input File Tab -->
-                <div id="fileInputContainer" class="space-y-2">
+                <div id="fileInputContainer" class="space-y-3">
                     <label class="block text-xs font-bold uppercase text-slate-600">Pilih Berkas Dokumen (.pdf, .docx, .txt)</label>
                     <label for="fileInput" id="dropZone" class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-emerald-50/50 hover:border-emerald-400 transition cursor-pointer block relative">
                         <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" class="hidden" onchange="handleFileSelected(this)">
@@ -213,8 +213,8 @@
                             </div>
                             <p class="text-xs text-slate-400">Maksimum ukuran berkas: 20 MB</p>
                         </div>
-                        <div id="selectedFileName" class="mt-4 hidden text-sm font-bold text-emerald-700 bg-emerald-100 p-2 rounded-lg inline-block"></div>
                     </label>
+                    <div id="selectedFileName" class="hidden p-4 rounded-xl bg-emerald-100/90 border-2 border-emerald-500 text-emerald-900 font-bold text-sm flex items-center justify-between shadow-sm"></div>
                 </div>
 
                 <!-- Input Text Tab (Hidden by default) -->
@@ -423,17 +423,30 @@
 
         function handleFileSelected(input) {
             const nameContainer = document.getElementById('selectedFileName');
-            if (input.files.length > 0) {
+            if (input && input.files && input.files.length > 0) {
                 const file = input.files[0];
-                nameContainer.innerHTML = `<i class="fa-solid fa-file-check mr-1"></i> Berkas Terpilih: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+                nameContainer.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-file-circle-check text-2xl text-emerald-600"></i>
+                        <div>
+                            <div class="text-xs text-emerald-800 font-extrabold uppercase tracking-wider">Berkas Dokumen Terpilih</div>
+                            <div class="text-sm font-black text-slate-900">${file.name}</div>
+                        </div>
+                    </div>
+                    <span class="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded-lg font-extrabold shadow-sm">${(file.size/1024).toFixed(1)} KB</span>
+                `;
                 nameContainer.classList.remove('hidden');
 
                 // Auto set doc title if empty
                 const titleInput = document.getElementById('docTitle');
-                if (!titleInput.value) {
+                if (titleInput && !titleInput.value) {
                     titleInput.value = file.name.replace(/\.[^/.]+$/, "");
                 }
             }
+        }
+
+        if (fileInput) {
+            fileInput.addEventListener('change', () => handleFileSelected(fileInput));
         }
 
         const activeServices = new Set(['plagiarism', 'ai', 'drillbit']);
