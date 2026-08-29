@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turnitin Originality Report Viewer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .sentence-highlight {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 2px 4px;
+            margin: 0 1px;
+            display: inline;
+        }
+        .sentence-highlight:hover {
+            filter: brightness(0.9);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Top Header Navigation Bar -->
+    <header class="bg-slate-900 text-white h-16 px-6 flex items-center justify-between shadow-lg sticky top-0 z-50">
+        <div class="flex items-center space-x-4">
+            <a href="/" class="text-slate-400 hover:text-white transition flex items-center text-sm font-semibold">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Dashboard
+            </a>
+            <div class="h-6 w-px bg-slate-700"></div>
+            <div>
+                <h1 class="font-bold text-base text-white flex items-center">
+                    <span class="text-red-500 font-extrabold mr-2">TURNITIN</span> Originality Report
+                </h1>
+                <p id="docMetaTitle" class="text-xs text-slate-400">Memuat laporan...</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <a id="downloadPdfBtn" href="#" target="_blank" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow flex items-center space-x-1.5 transition">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span>Unduh Laporan PDF</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Area: Split View -->
+    <div class="flex-grow flex flex-col md:flex-row max-w-full h-[calc(100vh-4rem)] overflow-hidden">
+
+        <!-- Left Column: Document Viewer with Colored Highlights -->
+        <div class="w-full md:w-2/3 h-full overflow-y-auto p-6 md:p-8 bg-white shadow-inner">
+            <div class="max-w-3xl mx-auto space-y-6">
+                
+                <!-- Document Header Box -->
+                <div class="border-b pb-4 mb-6 flex items-center justify-between">
+                    <div>
+                        <h2 id="reportDocTitle" class="text-2xl font-black text-slate-900">Judul Dokumen</h2>
+                        <div class="text-xs text-slate-500 mt-1 flex items-center space-x-4">
+                            <span><i class="fa-solid fa-user text-slate-400 mr-1"></i> Penulis: <strong id="reportAuthor" class="text-slate-700">-</strong></span>
+                            <span><i class="fa-solid fa-font text-slate-400 mr-1"></i> Total: <strong id="reportTotalWords" class="text-slate-700">0</strong> kata</span>
+                            <span><i class="fa-solid fa-highlighter text-slate-400 mr-1"></i> Mirip: <strong id="reportMatchedWords" class="text-slate-700">0</strong> kata</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div id="badgeContainer" class="text-center p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                            <div class="text-xs font-bold text-slate-500 uppercase">Similarity</div>
+                            <div id="similarityScoreBadge" class="text-3xl font-black text-red-600">0%</div>
+                        </div>
+                        <div id="aiBadgeContainer" class="text-center p-3 rounded-2xl bg-purple-50 border border-purple-200">
+                            <div class="text-xs font-bold text-purple-600 uppercase flex items-center justify-center space-x-1">
+                                <i class="fa-solid fa-robot text-xs"></i> <span>AI Score</span>
+                            </div>
+                            <div id="aiScoreBadge" class="text-3xl font-black text-purple-700">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Highlight Mode Switcher -->
+                <div class="bg-slate-900 rounded-xl p-2 flex items-center justify-between text-xs text-white">
+                    <div class="flex items-center space-x-2">
+                        <span class="font-bold text-slate-300 ml-2">Mode Penyorotan:</span>
+                        <div class="bg-slate-800 p-1 rounded-lg flex space-x-1">
+                            <button id="btnModeSimilarity" onclick="switchHighlightMode('similarity')" class="px-3 py-1.5 rounded-md bg-red-600 font-bold text-white shadow">
+                                <i class="fa-solid fa-clone mr-1"></i> Similarity Index (Plagiarisme)
+                            </button>
+                            <button id="btnModeAI" onclick="switchHighlightMode('ai')" class="px-3 py-1.5 rounded-md text-slate-300 hover:text-white font-bold">
+                                <i class="fa-solid fa-robot text-purple-400 mr-1"></i> AI Writing Detector (GPT/Gemini)
+                            </button>
+                        </div>
+                    </div>
+                    <span id="modeLegend" class="text-slate-400 text-[11px] mr-2">Menampilkan kemiripan referensi.</span>
+                </div>
+
+                <!-- Text Paragraphs Container -->
+                <div id="documentTextContainer" class="text-slate-800 text-sm md:text-base leading-relaxed space-y-4 text-justify select-text">
+                    <!-- Sentences with colored highlight spans rendered here -->
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right Column: Similarity Index & Match Overview Panel -->
+        <div class="w-full md:w-1/3 h-full bg-slate-900 text-white flex flex-col border-l border-slate-800">
+            
+            <!-- Panel Header -->
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-chart-pie text-red-500 text-lg"></i>
+                    <h3 class="font-bold text-sm tracking-wide">MATCH OVERVIEW / SUMBER KEMIRIPAN</h3>
+                </div>
+                <span id="sourcesCountBadge" class="text-xs bg-slate-800 text-slate-300 font-bold px-2.5 py-1 rounded-full border border-slate-700">
+                    0 Sumber
+                </span>
+            </div>
+
+            <!-- Overall Index Big Banner -->
+            <div class="p-6 bg-gradient-to-br from-slate-900 to-slate-950 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                    <div class="text-xs uppercase font-bold text-slate-400">Total Similarity Index</div>
+                    <div class="text-xs text-slate-500 mt-0.5">Persentase total kemiripan dokumen</div>
+                </div>
+                <div id="totalSimilarityScoreBig" class="text-4xl font-black text-red-500 tracking-tight">
+                    0%
+                </div>
+            </div>
+
+            <!-- List of Matched Sources -->
+            <div id="sourcesListContainer" class="flex-grow overflow-y-auto p-4 space-y-3">
+                <!-- Source items generated dynamically -->
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Script logic -->
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const reportId = urlParams.get('id');
+
+        if (!reportId) {
+            alert('ID Laporan tidak valid!');
+            window.location.href = '/';
+        }
+
+        document.getElementById('downloadPdfBtn').href = `/api/reports/${reportId}/export`;
+
+        let currentReport = null;
+        let currentMode = 'similarity';
+
+        async function loadReportDetail() {
+            try {
+                const res = await fetch(`/api/reports/${reportId}`);
+                if (!res.ok) {
+                    alert('Laporan tidak ditemukan!');
+                    window.location.href = '/';
+                    return;
+                }
+                currentReport = await res.json();
+                
+                const urlMode = urlParams.get('mode');
+                if (urlMode === 'ai') {
+                    currentMode = 'ai';
+                }
+                
+                renderReport();
+                if (urlMode === 'ai') {
+                    switchHighlightMode('ai');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Gagal memuat detail laporan.');
+            }
+        }
+
+        function switchHighlightMode(mode) {
+            currentMode = mode;
+            const btnSim = document.getElementById('btnModeSimilarity');
+            const btnAI = document.getElementById('btnModeAI');
+            const legend = document.getElementById('modeLegend');
+
+            if (mode === 'similarity') {
+                btnSim.className = 'px-3 py-1.5 rounded-md bg-red-600 font-bold text-white shadow';
+                btnAI.className = 'px-3 py-1.5 rounded-md text-slate-300 hover:text-white font-bold';
+                legend.innerText = 'Menampilkan penyorotan kemiripan dengan repositori referensi.';
+            } else {
+                btnAI.className = 'px-3 py-1.5 rounded-md bg-purple-600 font-bold text-white shadow';
+                btnSim.className = 'px-3 py-1.5 rounded-md text-slate-300 hover:text-white font-bold';
+                legend.innerText = 'Menampilkan penyorotan kalimat yang terdeteksi dibuat oleh AI (ChatGPT/Gemini/Claude).';
+            }
+            renderTextContainer();
+        }
+
+        function renderReport() {
+            const report = currentReport;
+            document.getElementById('docMetaTitle').innerText = `${report.document_title} - Oleh ${report.author}`;
+            document.getElementById('reportDocTitle').innerText = report.document_title;
+            document.getElementById('reportAuthor').innerText = report.author;
+            document.getElementById('reportTotalWords').innerText = report.total_words;
+            document.getElementById('reportMatchedWords').innerText = report.matched_words;
+            
+            const score = report.similarity_score;
+            document.getElementById('similarityScoreBadge').innerText = `${score}%`;
+            document.getElementById('totalSimilarityScoreBig').innerText = `${score}%`;
+
+            const rData = report.report_data;
+            const aiData = rData.ai_analysis || { ai_score: 0, annotated_ai_sentences: [] };
+            document.getElementById('aiScoreBadge').innerText = `${aiData.ai_score}%`;
+
+            // Render Sources List on Right Panel
+            const sourcesContainer = document.getElementById('sourcesListContainer');
+            document.getElementById('sourcesCountBadge').innerText = `${rData.sources.length} Sumber`;
+
+            if (rData.sources.length === 0) {
+                sourcesContainer.innerHTML = `
+                    <div class="p-6 text-center text-slate-500 text-xs space-y-2">
+                        <i class="fa-solid fa-shield-check text-3xl text-emerald-500"></i>
+                        <p class="font-bold text-slate-300">Dokumen Bebas Plagiarisme</p>
+                        <p>Tidak ditemukan pencocokan teks dengan basis data referensi.</p>
+                    </div>
+                `;
+            } else {
+                sourcesContainer.innerHTML = rData.sources.map((src, idx) => {
+                    const snippetsHtml = (src.matched_snippets && src.matched_snippets.length > 0)
+                        ? src.matched_snippets.map(snip => `<div class="bg-slate-950 p-2.5 rounded-lg border border-slate-700/80 text-xs text-slate-300 font-mono italic my-1">"${snip}"</div>`).join('')
+                        : `<div class="text-[11px] text-slate-500 italic">Teks referensi terdeteksi mirip.</div>`;
+
+                    return `
+                    <div id="source-card-${src.id}" onclick="highlightSentencesForSource(${src.id})" 
+                        class="p-4 rounded-xl bg-slate-800/80 border border-slate-700/60 hover:border-slate-500 transition cursor-pointer space-y-2 relative overflow-hidden group">
+                        <div class="absolute left-0 top-0 bottom-0 w-2" style="background-color: ${src.color};"></div>
+                        <div class="pl-2 flex items-start justify-between">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-black px-2 py-0.5 rounded text-white" style="background-color: ${src.color};">
+                                    #${idx + 1}
+                                </span>
+                                <span class="font-bold text-sm text-slate-200 line-clamp-1 group-hover:text-white transition">
+                                    ${src.title}
+                                </span>
+                            </div>
+                            <span class="text-sm font-black tracking-tight" style="color: ${src.color};">
+                                ${src.percentage}%
+                            </span>
+                        </div>
+                        <div class="pl-2 text-xs text-slate-400 flex items-center justify-between">
+                            <span><i class="fa-solid fa-building-columns text-slate-500 mr-1"></i> ${src.institution}</span>
+                            <span class="font-mono text-slate-500">${src.words_matched} kata</span>
+                        </div>
+                        <!-- Matched Excerpt Snippet -->
+                        <div class="pl-2 pt-1 border-t border-slate-700/50">
+                            <div class="text-[10px] uppercase font-bold text-slate-400 flex items-center space-x-1 mb-1">
+                                <i class="fa-solid fa-quote-left text-slate-500"></i>
+                                <span>Teks Referensi Asli Yang Dicocokkan:</span>
+                            </div>
+                            ${snippetsHtml}
+                        </div>
+                    </div>
+                `}).join('');
+            }
+
+            renderTextContainer();
+        }
+
+        function renderTextContainer() {
+            if (!currentReport) return;
+            const rData = currentReport.report_data;
+            const textContainer = document.getElementById('documentTextContainer');
+            
+            if (currentMode === 'similarity') {
+                const sentences = rData.annotated_sentences || [];
+                let htmlContent = '';
+                sentences.forEach((s, sIdx) => {
+                    if (s.matched && s.color) {
+                        htmlContent += `
+                            <span id="sent-${sIdx}" onclick="focusSourceCard(${s.source_id})" 
+                                class="sentence-highlight font-medium text-white shadow-sm" 
+                                style="background-color: ${s.color};" 
+                                title="Kemiripan ${s.similarity}% dengan: ${s.source_title}">
+                                ${s.text}
+                                <sup class="text-[10px] bg-black/40 px-1 rounded ml-0.5">${s.similarity}%</sup>
+                            </span> `;
+                    } else {
+                        htmlContent += `<span id="sent-${sIdx}">${s.text}</span> `;
+                    }
+                });
+                textContainer.innerHTML = `<p class="leading-relaxed">${htmlContent}</p>`;
+            } else {
+                // AI Detector Highlighting Mode
+                const aiSentences = (rData.ai_analysis && rData.ai_analysis.annotated_ai_sentences) ? rData.ai_analysis.annotated_ai_sentences : [];
+                let htmlContent = '';
+                aiSentences.forEach((s, sIdx) => {
+                    if (s.is_ai) {
+                        htmlContent += `
+                            <span id="sent-ai-${sIdx}" 
+                                class="sentence-highlight font-medium text-white bg-purple-700 shadow-sm border-b-2 border-purple-400" 
+                                title="Probabilitas Terdeteksi AI: ${s.ai_probability}%">
+                                ${s.text}
+                                <sup class="text-[10px] bg-purple-900 px-1.5 py-0.5 rounded-full font-mono ml-0.5"><i class="fa-solid fa-robot mr-0.5"></i>${s.ai_probability}% AI</sup>
+                            </span> `;
+                    } else {
+                        htmlContent += `<span id="sent-ai-${sIdx}">${s.text}</span> `;
+                    }
+                });
+                textContainer.innerHTML = `<p class="leading-relaxed">${htmlContent}</p>`;
+            }
+        }
+
+        function focusSourceCard(sourceId) {
+            const card = document.getElementById(`source-card-${sourceId}`);
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.classList.add('ring-2', 'ring-white', 'scale-[1.02]');
+                setTimeout(() => card.classList.remove('ring-2', 'ring-white', 'scale-[1.02]'), 1500);
+            }
+        }
+
+        function highlightSentencesForSource(sourceId) {
+            const matchedSpans = document.querySelectorAll(`[onclick="focusSourceCard(${sourceId})"]`);
+            if (matchedSpans.length > 0) {
+                matchedSpans[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                matchedSpans.forEach(span => {
+                    span.classList.add('ring-4', 'ring-white', 'z-10');
+                    setTimeout(() => span.classList.remove('ring-4', 'ring-white', 'z-10'), 2000);
+                });
+            }
+        }
+
+        loadReportDetail();
+    </script>
+</body>
+</html>
