@@ -33,7 +33,11 @@ app.add_middleware(
 def startup_event():
     init_db()
 
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads")
+if os.environ.get("VERCEL"):
+    UPLOAD_DIR = "/tmp/uploads"
+else:
+    UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads")
+
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 from typing import Optional
